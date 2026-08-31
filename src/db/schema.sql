@@ -1,37 +1,32 @@
 create extension if not exists "uuid-ossp";
-
-CREATE TABLE IF NOT EXISTS users(
-    id uuid primary key default uuid_generate_v4(),
-    name varchar(100) not null,
-    email varchar(255) unique not null,
-    password_hash varchar(255) not null,
-    created_at timestamp with time zone default current_timestamp
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
 
 CREATE TABLE IF NOT EXISTS accounts (
-    id uuid primary key default uuid_generate_v4(),
-    user_id uuid not null references users(id) on delete cascade,
-    name varchar(100) not null, --workspace name
-    api_key_hash varchar(64) unique not null,
---token for thier shop server )every users can have multipele acounts 
--- and evey account will have thier own apikey 
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    api_key_hash VARCHAR(64) UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS subscriptions(
-    id uuid primary key uuid_generate_v4(),
-    user_id uuid not null references on users(id),
-    account_id uuid not null references on accounts(id)
-    on delete cascade,
-    event_type varchar(100) not null,
-    endpoint_url text not null,
-    Hmac_secret varchar(100) not null,
-    active boolean default true not null
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    event_type VARCHAR(100) NOT NULL,
+    endpoint_url TEXT NOT NULL,
+    secret VARCHAR(100) NOT NULL,
+    active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-)
+);
 
-create index if not exists idx_sub_acc_event on subscriptions(account_id,event_type)
+CREATE INDEX IF NOT EXISTS idx_accounts_user ON accounts(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_account_event ON subscriptions(account_id, event_type);
