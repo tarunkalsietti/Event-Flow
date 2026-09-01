@@ -5,7 +5,7 @@ import dotenv from "dotenv"
 import { json } from "stream/consumers";
 const SALT_ROUNDS =10;
 
-const jwttoken=process.env.JWT_SECRET  || "fallback_super_secret_jwt_key";
+const JWT_SECRET=process.env.JWT_SECRET  || "fallback_super_secret_jwt_key";
 
 // ============================================================
 // 1. PASSWORD HASHING (Human Dashboard Signups & Logins)
@@ -52,3 +52,17 @@ export function generatehmacsignature(hmacsecret:string, payload:any):string{
 const signature=crypto.createHmac("sha256",hmacsecret).update(body).digest("hex")
 return signature
 }
+
+
+// ============================================================
+// 4. JWT SESSIONS (Stateless Login Badges for Dashboard)
+// ============================================================
+
+export function signJwt(payload: { userId: string }): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+}
+export function verifyJwt(token: string): { userId: string } {
+  return jwt.verify(token, JWT_SECRET) as { userId: string };
+}
+
+
