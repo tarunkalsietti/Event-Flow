@@ -8,15 +8,36 @@ export class authcontroller{
         try{
        const {name , email , password} = req.body
        if(!name || !email || !password){
-        res.status(401).json({
+        res.status(400).json({
             message:"credential are missing",
             data:null
         })
+        return;
        }
-     const signin=await auth.signin(req.body)
-     
-        }catch(error:any){
+     const result=await auth.signin(req.body)
+     if(result){
+        res.status(201).json({
+            message:"user created sucessfully",
+            data:result
+        });
 
-        }
+     }}
+
+
+        catch(error:any){
+            if(error.message==="EMAIL_EXISTS"){
+                res.status(400).json({
+                    message:"email already exist",
+                    data:null
+                })
+                return
+            };
+ console.error("Signup error:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      data: null,
+        });
+        
     }
+}
 }
