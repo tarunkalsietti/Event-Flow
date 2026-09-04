@@ -25,7 +25,7 @@ export interface User {
   name: string;
   email: string;
   created_at: Date;
-  token :string
+  token?: string;
 }
 
 
@@ -60,5 +60,37 @@ export class Authenticationservice{
 
   
     }
-    
+
+    async login(data: login): Promise<{ user: User; token: string }> {
+        if (!data.email || !data.password) {
+            throw new Error("CREDENTIALS_REQUIRED");
+        }
+
+        const email = data.email.toLowerCase().trim();
+        const result = await db.query(
+            "SELECT id, name, email, password_hash, created_at FROM users WHERE email = $1",
+            [email]
+        );
+
+        if (result.rows.length === 0) {
+            throw new Error("INVALID_CREDENTIALS");
+        }
+
+        const userRow = result.rows[0];
+        const isPasswordValid = await comparepassword(data.password, userRow.password_hash);
+        if (!isPasswordValid) {
+            throw new Error("INVALID_CREDENTIALS");
+        }
+
+        const token = signJwt({ userId: userRow.id });
+        const user: User = {
+            id: userRow.id,
+            name: userRow.name,
+            email: userRow.email,
+            created_at: userRow.created_at,
+            token
+        };
+
+        return { user, token };
+    }
 }

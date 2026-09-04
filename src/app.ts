@@ -6,13 +6,13 @@ app.use(cors());
 app.use(express.json());
 
 
-app.get("/health", (req,res)=>{
-res.json({
-    status:"ok"
-})
-
+app.get("/health", (req, res) => {
+    res.json({
+        status: "ok"
+    });
+});
 
 app.use(authroute);
+app.use("/auth", authroute);
 
-})
 export default app;

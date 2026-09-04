@@ -40,4 +40,37 @@ export class authcontroller{
         
     }
 }
+
+    login = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { email, password } = req.body;
+            if (!email || !password) {
+                res.status(400).json({
+                    message: "Email and password are required",
+                    data: null
+                });
+                return;
+            }
+
+            const result = await auth.login({ email, password });
+            res.status(200).json({
+                message: "Login successful",
+                data: result
+            });
+        } catch (error: any) {
+            if (error.message === "INVALID_CREDENTIALS" || error.message === "CREDENTIALS_REQUIRED") {
+                res.status(401).json({
+                    message: "Invalid email or password",
+                    data: null
+                });
+                return;
+            }
+
+            console.error("Login error:", error);
+            res.status(500).json({
+                message: "Internal server error",
+                data: null
+            });
+        }
+    };
 }
